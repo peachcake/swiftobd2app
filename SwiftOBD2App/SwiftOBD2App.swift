@@ -51,6 +51,7 @@ struct SMARTOBD2App: App {
     @StateObject var globalSettings = GlobalSettings()
     @StateObject var obdService = OBDService(connectionType: .bluetooth)
     @StateObject var garage = Garage()
+    @StateObject var driveMonitor = DriveMonitor()
 
     @State var SplashScreenIsActive: Bool = true
 
@@ -63,6 +64,7 @@ struct SMARTOBD2App: App {
                     .environmentObject(globalSettings)
                     .environmentObject(garage)
                     .environmentObject(obdService)
+                    .environmentObject(driveMonitor)
             }
         }
     }
