@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  command-gate:
+    name: Read-only command gate tests
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run CommandGate tests
+        run: swift test --package-path Packages/SwiftOBD2 --filter CommandGateTests
+
+  build:
+    name: Build app for simulator
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install XcodeGen
+        run: brew install xcodegen
+      - name: Generate project
+        run: xcodegen generate
+      - name: Build
+        run: |
+          xcodebuild -project SwiftOBD2App.xcodeproj -scheme SwiftOBD2App \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO build

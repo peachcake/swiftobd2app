@@ -20,6 +20,17 @@ struct HomeView: View {
             ScrollView(.vertical, showsIndicators: false) {
                 VStack {
                     LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 20) {
+                        SectionView(title: "Drive",
+                                    subtitle: "ATF temp and logging",
+                                    iconName: "thermometer.medium",
+                                    destination: DriveView()
+                        )
+                        .simultaneousGesture(TapGesture().onEnded {
+                            withAnimation {
+                                displayType = .none
+                            }
+                        })
+
                         SectionView(title: "Diagnostics",
                                     subtitle: "Read Vehicle Health",
                                     iconName: "wrench.and.screwdriver",

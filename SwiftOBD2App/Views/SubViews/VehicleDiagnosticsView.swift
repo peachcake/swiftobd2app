@@ -137,7 +137,6 @@ struct VehicleDiagnosticsView: View {
     @State private var showAlert = false
     @State private var alertMessage = ""
     @State private var loading = false
-    @State private var clearCodeAlert = false
     @State var troubleCodes: [ECUID:[TroubleCode]] = [:]
 
     @State var requestingTroubleCodes = false
@@ -225,23 +224,7 @@ struct VehicleDiagnosticsView: View {
         }
     }
 
-    @MainActor
-    func clearCode() async {
-        impactFeedback.prepare()
-        impactFeedback.impactOccurred()
-        notificationFeedback.prepare()
-
-        do {
-            try await obd2Service.clearTroubleCodes()
-            self.loading = true
-            notificationFeedback.notificationOccurred(.success)
-        } catch {
-            print(error.localizedDescription)
-            notificationFeedback.notificationOccurred(.error)
-            self.alertMessage = error.localizedDescription
-            self.showAlert = true
-        }
-    }
+    // Clear Codes removed: this build is read-only (mode 04 is refused by CommandGate).
 
     @Namespace var animation
     @State var stages: [Stage] = []
@@ -317,21 +300,6 @@ struct VehicleDiagnosticsView: View {
         .alert("", isPresented: $showAlert) {} message: {
             Text(alertMessage)
         }
-        .alert("Wait", isPresented: $clearCodeAlert) {
-            Button("Cancel", role: .cancel) {}
-
-            Button("Clear Codes", role: .destructive) {
-                guard !loading else { return }
-                self.loading = true
-                Task {
-                    await scanForTroubleCodes()
-                    loading = false
-                }
-            }
-
-        } message: {
-            Text("Do not attempt to clear codes while the engine is running. Clearing codes while the engine is running can cause serious damage to your vehicle.")
-        }
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 Button {
@@ -342,15 +310,6 @@ struct VehicleDiagnosticsView: View {
                 } label: {
                     Label("Back", systemImage: "chevron.backward")
                 }
-            }
-
-            ToolbarItem(placement: .secondaryAction) {
-                Button("Clear Codes", role: .destructive) {
-                    clearCodeAlert = true
-                }
-                .buttonStyle(.bordered)
-                .disabled(loading)
-                .shadow(color: .black.opacity(0.5), radius: 10, x: 0, y: 5)
             }
 
             ToolbarItem(placement: .primaryAction) {

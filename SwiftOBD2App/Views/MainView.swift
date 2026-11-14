@@ -46,4 +46,5 @@ struct MainView: View {
         .environmentObject(GlobalSettings())
         .environmentObject(Garage())
         .environmentObject(OBDService())
+        .environmentObject(DriveMonitor())
 }

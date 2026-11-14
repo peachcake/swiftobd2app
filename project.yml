@@ -1,14 +1,21 @@
 name: SwiftOBD2App
 options:
+  # Change to your own reverse-DNS prefix before signing.
   bundleIdPrefix: com.myapp
+settings:
+  base:
+    # Set your Apple developer team ID here (or pick it in Xcode's Signing tab).
+    DEVELOPMENT_TEAM: ""
 targets:
   SwiftOBD2App:
     type: application
     platform: iOS
-    deploymentTarget: "16.0"
+    deploymentTarget: "18.0"
+    scheme: {}
     dependencies:
       - package: SwiftOBD2
         product: SwiftOBD2
+      - target: DriveActivityExtension
     info:
       path: "SwiftOBD2App/Info.plist"
       properties:
@@ -17,19 +24,41 @@ targets:
         CFBundleIdentifier: $(PRODUCT_BUNDLE_IDENTIFIER)
         CFBundlePackageType: $(PRODUCT_BUNDLE_PACKAGE_TYPE)
         UILaunchStoryboardName: "LaunchScreen"
-        NSBluetoothAlwaysUsageDescription: "This app uses Bluetooth to connect to nearby devices."
-        NSBluetoothPeripheralUsageDescription: "This app uses Bluetooth to connect to nearby devices."
+        NSBluetoothAlwaysUsageDescription: "Connects to your OBD-II adapter to read the vehicle's sensors."
+        NSBluetoothPeripheralUsageDescription: "Connects to your OBD-II adapter to read the vehicle's sensors."
         NSLocationAlwaysUsageDescription: "This app uses location services to connect to nearby devices."
         NSLocationWhenInUseUsageDescription: "This app uses location services to connect to nearby devices."
+        NSLocalNetworkUsageDescription: "Uploads your drive logs to InfluxDB on your home network."
+        NSSupportsLiveActivities: true
+        NSAppTransportSecurity:
+          # Lets uploads reach InfluxDB at a LAN or .local address over http.
+          # InfluxUploader refuses cleartext to anything else.
+          NSAllowsLocalNetworking: true
         UIBackgroundModes: ["bluetooth-central"]
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait, UIInterfaceOrientationLandscapeLeft, UIInterfaceOrientationLandscapeRight]
         UISupportedInterfaceOrientations~ipad: [UIInterfaceOrientationPortrait, UIInterfaceOrientationPortraitUpsideDown, UIInterfaceOrientationLandscapeLeft, UIInterfaceOrientationLandscapeRight]
     sources:
       - path: "SwiftOBD2App"
+      - path: "Shared"
+
+  DriveActivityExtension:
+    type: app-extension
+    platform: iOS
+    deploymentTarget: "18.0"
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.myapp.SwiftOBD2App.DriveActivity
+    info:
+      path: "DriveActivityExtension/Info.plist"
+      properties:
+        CFBundleDisplayName: "Drive"
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    sources:
+      - path: "DriveActivityExtension"
+      - path: "Shared"
 
 packages:
-    SwiftOBD2:
-        url: https://github.com/kkonteh97/SwiftOBD2.git
-        requirement:
-        branch: "main"
-
+  # Vendored and pinned on purpose: the read-only CommandGate lives in this copy.
+  SwiftOBD2:
+    path: Packages/SwiftOBD2
